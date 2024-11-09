@@ -1,18 +1,9 @@
 name: MeowKit
 version: 1.0
 main: com.meow.meowkit.MeowKit
-api-version: 1.16
 commands:
-  MeowKit:
-    description: MeowKit 命令
-    usage: /<command> <reload|remove|convert>
-permissions:
-  meowkit.reload:
-    description: 重新加载 meowkit 配置文件
-    default: op
-  meowkit.remove:
-    description: 删除玩家的同意信息
-    default: op
-  meowkit.convert:
-    description: 从另一种存储类型迁移同意 EULA 的玩家列表到当前使用的存储类型中（覆写）
-    default: op    
+  mkit:
+    description: MeowKit 插件的主命令
+    usage: /mkit <subcommand>
+    permission: mkit.admin
+    permission-message: 你没有权限执行此命令！
