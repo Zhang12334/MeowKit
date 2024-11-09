@@ -4,7 +4,7 @@ version: 1.0
 storage-type: yml
 # 存储类型，支持 mysql 或 yml，默认是 yml 本地存储
 mysql:
-  # MySQL 数据库配置，若选择 json 则无需配置
+  # MySQL 数据库配置
   host: localhost # 数据库地址
   port: 3306 # 数据库端口，默认是 3306
   database: yourdatabase # 数据库名称
