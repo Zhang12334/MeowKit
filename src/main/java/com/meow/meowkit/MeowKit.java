@@ -1,6 +1,5 @@
 package com.meow.meowkit;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,10 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MeowKit extends JavaPlugin {
     private FileConfiguration config;
@@ -33,7 +29,6 @@ public class MeowKit extends JavaPlugin {
         loadConfig();
         loadKitsConfig();
         initStorage();
-        this.getCommand("mkit").setExecutor(this);
         getLogger().info("MeowKit 插件已启用！");
     }
 
@@ -177,6 +172,7 @@ public class MeowKit extends JavaPlugin {
         } else {
             kitsConfig.set("kits." + kitName + ".cdk", cdk);
             kitsConfig.set("kits." + kitName + ".permission", permission);
+            kitsConfig.set("kits." + kitName + ".commands", kit.getCommands());
             try {
                 kitsConfig.save(kitsFile);
             } catch (IOException e) {
@@ -214,7 +210,7 @@ public class MeowKit extends JavaPlugin {
             kit.addCommand(commandContent);
             if ("mysql".equalsIgnoreCase(config.getString("storage-type", "yml"))) {
                 try (Statement stmt = mysqlConnection.createStatement()) {
-                    String query = "UPDATE kits SET command = '" + commandContent + "' WHERE name = '" + kitName + "'";
+                    String query = "UPDATE kits SET commands = '" + String.join(",", kit.getCommands()) + "' WHERE name = '" + kitName + "'";
                     stmt.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -236,7 +232,7 @@ public class MeowKit extends JavaPlugin {
             kit.removeCommand(commandId);
             if ("mysql".equalsIgnoreCase(config.getString("storage-type", "yml"))) {
                 try (Statement stmt = mysqlConnection.createStatement()) {
-                    String query = "UPDATE kits SET command = '" + kit.getCommands() + "' WHERE name = '" + kitName + "'";
+                    String query = "UPDATE kits SET commands = '" + String.join(",", kit.getCommands()) + "' WHERE name = '" + kitName + "'";
                     stmt.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -251,41 +247,42 @@ public class MeowKit extends JavaPlugin {
             }
         }
     }
+}
 
-    public static class Kit {
-        private String cdk;
-        private final String permission;
-        private final List<String> commands = new ArrayList<>();
+class Kit {
+    private String cdk;
+    private String permission;
+    private List<String> commands;
 
-        public Kit(String cdk, String permission) {
-            this.cdk = cdk;
-            this.permission = permission;
-        }
+    public Kit(String cdk, String permission) {
+        this.cdk = cdk;
+        this.permission = permission;
+        this.commands = new ArrayList<>();
+    }
 
-        public void setCdk(String cdk) {
-            this.cdk = cdk;
-        }
+    public String getCdk() {
+        return cdk;
+    }
 
-        public void addCommand(String command) {
-            commands.add(command);
-        }
+    public void setCdk(String cdk) {
+        this.cdk = cdk;
+    }
 
-        public void removeCommand(int commandId) {
-            if (commandId >= 0 && commandId < commands.size()) {
-                commands.remove(commandId);
-            }
-        }
+    public String getPermission() {
+        return permission;
+    }
 
-        public List<String> getCommands() {
-            return commands;
-        }
+    public List<String> getCommands() {
+        return commands;
+    }
 
-        public String getCdk() {
-            return cdk;
-        }
+    public void addCommand(String command) {
+        commands.add(command);
+    }
 
-        public String getPermission() {
-            return permission;
+    public void removeCommand(int index) {
+        if (index >= 0 && index < commands.size()) {
+            commands.remove(index);
         }
     }
 }
