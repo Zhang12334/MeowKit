@@ -28,6 +28,8 @@ public class MeowKit extends JavaPlugin {
         // bstats
         int pluginId = 23851;
         Metrics metrics = new Metrics(this, pluginId);
+        this.getCommand("mkit").setExecutor(this);
+        this.getCommand("mkit").setTabCompleter(new MeowKitTabCompleter()); // 注册 Tab 完成器
         loadConfig();
         loadKitsConfig();
         initStorage();
