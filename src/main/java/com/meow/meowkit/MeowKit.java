@@ -149,6 +149,9 @@ public class MeowKit extends JavaPlugin {
                     } else {
                         sender.sendMessage("无效的管理指令！");
                     }
+                } else if (action.equalsIgnoreCase("list")) {
+                    // 查看礼包中的所有指令
+                    listKitCommands(sender, kitName);
                 } else {
                     sender.sendMessage("未知的子指令：" + action);
                 }
@@ -157,6 +160,23 @@ public class MeowKit extends JavaPlugin {
         }
         return false;
     }
+
+    private void listKitCommands(CommandSender sender, String kitName) {
+        Kit kit = kits.get(kitName);
+        if (kit != null) {
+            if (kit.getCommands().isEmpty()) {
+                sender.sendMessage("礼包 " + kitName + " 中没有指令！");
+            } else {
+                sender.sendMessage("礼包 " + kitName + " 中的指令列表：");
+                for (int i = 0; i < kit.getCommands().size(); i++) {
+                    sender.sendMessage(i + ": " + kit.getCommands().get(i));
+                }
+            }
+        } else {
+            sender.sendMessage("没有找到名为 " + kitName + " 的礼包！");
+        }
+    }
+
 
     private void addKit(String kitName, String cdk, String permission) {
         Kit kit = new Kit(cdk, permission);
@@ -207,7 +227,13 @@ public class MeowKit extends JavaPlugin {
     private void addKitCommand(String kitName, String commandContent) {
         Kit kit = kits.get(kitName);
         if (kit != null) {
+            // 添加指令并获取其 ID
             kit.addCommand(commandContent);
+
+            // 获取新添加指令的 ID
+            int commandId = kit.getCommands().size() - 1;
+
+            // 更新 MySQL 或 YML 存储
             if ("mysql".equalsIgnoreCase(config.getString("storage-type", "yml"))) {
                 try (Statement stmt = mysqlConnection.createStatement()) {
                     String query = "UPDATE kits SET commands = '" + String.join(",", kit.getCommands()) + "' WHERE name = '" + kitName + "'";
@@ -223,8 +249,13 @@ public class MeowKit extends JavaPlugin {
                     e.printStackTrace();
                 }
             }
+
+            // 向玩家返回指令 ID
+            Player player = (Player) sender;
+            player.sendMessage("指令已添加到礼包 " + kitName + "，指令 ID: " + commandId);
         }
     }
+
 
     private void removeKitCommand(String kitName, int commandId) {
         Kit kit = kits.get(kitName);
