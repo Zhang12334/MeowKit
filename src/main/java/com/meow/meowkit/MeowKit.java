@@ -140,7 +140,8 @@ public class MeowKit extends JavaPlugin {
                     String commandAction = args[3];
                     if (commandAction.equalsIgnoreCase("add")) {
                         String commandContent = String.join(" ", args).substring(4); // 取从第5个参数开始的内容作为指令
-                        addKitCommand(kitName, commandContent, sender);
+                        Player player = (Player) sender;  // 将 CommandSender 转换为 Player
+                        addKitCommand(kitName, commandContent, player);
                     } else if (commandAction.equalsIgnoreCase("remove")) {
                         int commandId = Integer.parseInt(args[4]);
                         removeKitCommand(kitName, commandId);
@@ -223,7 +224,7 @@ public class MeowKit extends JavaPlugin {
         }
     }
 
-    private void addKitCommand(String kitName, String commandContent, Player sender) {
+    private void addKitCommand(String kitName, String commandContent, Player player) {
         Kit kit = kits.get(kitName);
         if (kit != null) {
             // 添加指令并获取其 ID
