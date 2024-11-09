@@ -80,9 +80,12 @@ public class StorageManager {
 
     // 将礼包数据保存到 MySQL
     private void saveToMySQL(String kitName, String cdk, String permission) {
-        try (Statement stmt = mysqlConnection.createStatement()) {
-            String query = "INSERT INTO kits (name, cdk, permission) VALUES ('" + kitName + "', '" + cdk + "', '" + permission + "')";
-            stmt.executeUpdate(query);
+        try (PreparedStatement stmt = mysqlConnection.prepareStatement(
+                "INSERT INTO kits (name, cdk, permission) VALUES (?, ?, ?)")) {
+            stmt.setString(1, kitName);
+            stmt.setString(2, cdk);
+            stmt.setString(3, permission);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -104,9 +107,11 @@ public class StorageManager {
 
     // 更新 MySQL 中的 CDK
     private void updateMySQLCDK(String kitName, String newCdk) {
-        try (Statement stmt = mysqlConnection.createStatement()) {
-            String query = "UPDATE kits SET cdk = '" + newCdk + "' WHERE name = '" + kitName + "'";
-            stmt.executeUpdate(query);
+        try (PreparedStatement stmt = mysqlConnection.prepareStatement(
+                "UPDATE kits SET cdk = ? WHERE name = ?")) {
+            stmt.setString(1, newCdk);
+            stmt.setString(2, kitName);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -174,9 +179,24 @@ public class StorageManager {
 
     // 获取礼包
     private Kit getKit(String kitName) {
-        // 可以根据存储方式来决定是从 MySQL 还是 YML 中获取数据
         Kit kit = new Kit("", "meowkit.receive.default"); // 示例，返回一个默认值
-        // 添加从 YML 或 MySQL 获取的具体逻辑
+
+        if ("mysql".equalsIgnoreCase(plugin.getConfig().getString("storage-type", "yml"))) {
+            try (PreparedStatement stmt = mysqlConnection.prepareStatement(
+                    "SELECT * FROM kits WHERE name = ?")) {
+                stmt.setString(1, kitName);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    kit.setCdk(rs.getString("cdk"));
+                    kit.setPermission(rs.getString("permission"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            kit.setCdk(kitsConfig.getString("kits." + kitName + ".cdk", ""));
+            kit.setPermission(kitsConfig.getString("kits." + kitName + ".permission", "meowkit.receive.default"));
+        }
         return kit;
     }
 

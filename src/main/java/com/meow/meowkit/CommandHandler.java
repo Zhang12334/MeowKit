@@ -23,6 +23,7 @@ public class CommandHandler implements org.bukkit.command.CommandExecutor {
 
             String subCommand = args[0];
 
+            // 权限检查
             if (subCommand.equalsIgnoreCase("add") && !sender.hasPermission("mkit.admin")) {
                 sender.sendMessage("你没有权限执行此命令！");
                 return false;
